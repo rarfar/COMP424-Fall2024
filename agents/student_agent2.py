@@ -7,7 +7,7 @@ from copy import deepcopy
 import time
 from helpers import random_move, count_capture, execute_move, check_endgame, get_valid_moves
 
-@register_agent("student_agent")
+@register_agent("student_agent2")
 class StudentAgent(Agent):
   """
   A class for your implementation. Feel free to use this class to
@@ -16,15 +16,101 @@ class StudentAgent(Agent):
 
   def __init__(self):
     super(StudentAgent, self).__init__()
-    self.name = "StudentAgent"
+    self.name = "StudentAgent2"
 
 #potential weights for each heuristic component
     self.weights = {"coin_parity": 1.0,
-                      "mobility": 2.0,
-                      "corners_captured":9.0,
-                      "stability":8
+                      "mobility": 3.0,
+                      "corners_captured":5.0,
+                      "stability":4.0
                       }
 
+
+  def evaluation_function(self, chess_board, player, opponent):
+    #Combine all heurisitic components with weights
+    coin_parity_score = self.heuristic_coin_parity(chess_board,player,opponent)
+    mobility_score = self.heuristic_mobility(chess_board, player, opponent)
+    corners_score = self.heuristic_corners_capture(chess_board, player, opponent)
+
+    #STABILITY STUCK IN RECURSIVE LOOP, comment out for now
+    stability_score = self.heuristic_stability(chess_board, player, opponent)
+
+    total_score = (
+            self.weights["coin_parity"] * coin_parity_score +
+            self.weights["mobility"] * mobility_score +
+            self.weights["corners_captured"] * corners_score +
+            self.weights["stability"] * stability_score
+    )
+    return total_score
+
+  def alphabeta(self,chess_board,player, opponent, depth,alpha,beta,maximizing_player):
+
+      #base case
+      if depth == 0 or check_endgame(chess_board,player, opponent):
+          return self.evaluation_function(chess_board, player, opponent)
+
+      if maximizing_player:
+          max_score = -float("inf")
+          legal_moves_player = get_valid_moves(chess_board, player)
+          for move in legal_moves_player:
+              simulated_board = deepcopy(chess_board)
+              execute_move(simulated_board, move, player)
+              eval = self.alphabeta(simulated_board, player, opponent, depth-1,alpha,beta,False)
+              max_score = max(max_score,eval)
+              alpha = max(alpha,eval)
+              if beta<= alpha:
+                  break #beta cutoff
+          return max_score
+      else:
+          min_score = float("inf")
+          legal_moves_opponent = get_valid_moves(chess_board, opponent)
+          for move in legal_moves_opponent:
+              simulated_board = deepcopy(chess_board)
+              execute_move(simulated_board, move, opponent)
+              eval = self.alphabeta(simulated_board, opponent, player, depth -1, alpha, beta, True)
+              min_score = min(min_score,eval)
+              beta = min(beta,eval)
+              if beta<=alpha:
+                  break
+          return min_score
+
+
+  def iterative_deepening_search(self,chess_board,player,opponent,max_time):
+    best_move = random_move(chess_board,player) # placeholder until something better
+    depth = 1
+    start_time = time.time()
+
+    while True:
+        best_move_at_depth = self.alphabeta_search(chess_board,player,opponent, depth)
+        if time.time() - start_time >= max_time:
+            break
+
+        best_move = best_move_at_depth
+        depth += 1
+
+    return best_move
+
+  def alphabeta_search(self,chess_board,player,opponent,depth):
+      legal_moves = get_valid_moves(chess_board, player)
+      best_move = random_move(chess_board,player)
+      best_value = -float("inf")
+
+      for move in legal_moves:
+          new_board = deepcopy(chess_board)
+          execute_move(new_board, move, player)
+          move_value = self.alphabeta(new_board,player, opponent,depth-1,-float("inf"),float("inf"), False)
+          if move_value > best_value:
+              best_value = move_value
+              best_move = move
+      return best_move
+
+
+  def step(self, chess_board, player, opponent):
+    max_time = 2.00
+    best_move = self.iterative_deepening_search(chess_board,player,opponent,max_time)
+    return best_move
+
+  #### heuristic calculations
   def heuristic_coin_parity(self, chess_board, player, opponent):
     player_coins = np.sum(chess_board == player)
     opponent_coins = np.sum(chess_board == opponent)
@@ -186,69 +272,4 @@ class StudentAgent(Agent):
             return True
 
     return False
-
-
-  def evaluation_function(self, chess_board, player, opponent):
-    #Combine all heurisitic components with weights
-    coin_parity_score = self.heuristic_coin_parity(chess_board,player,opponent)
-    mobility_score = self.heuristic_mobility(chess_board, player, opponent)
-    corners_score = self.heuristic_corners_capture(chess_board, player, opponent)
-
-    #STABILITY STUCK IN RECURSIVE LOOP, comment out for now
-    stability_score = self.heuristic_stability(chess_board, player, opponent)
-
-    total_score = (
-            self.weights["coin_parity"] * coin_parity_score +
-            self.weights["mobility"] * mobility_score +
-            self.weights["corners_captured"] * corners_score +
-            self.weights["stability"] * stability_score
-    )
-    return total_score
-
-
-  def step(self, chess_board, player, opponent):
-    """
-    Implement the step function of your agent here.
-    You can use the following variables to access the chess board:
-    - chess_board: a numpy array of shape (board_size, board_size)
-      where 0 represents an empty spot, 1 represents Player 1's discs (Blue),
-      and 2 represents Player 2's discs (Brown).
-    - player: 1 if this agent is playing as Player 1 (Blue), or 2 if playing as Player 2 (Brown).
-    - opponent: 1 if the opponent is Player 1 (Blue), or 2 if the opponent is Player 2 (Brown).
-
-    You should return a tuple (r,c), where (r,c) is the position where your agent
-    wants to place the next disc. Use functions in helpers to determine valid moves
-    and more helpful tools.
-
-    Please check the sample implementation in agents/random_agent.py or agents/human_agent.py for more details.
-    """
-
-    # Get all legal moves for the current player (our student agent)
-    legal_moves = get_valid_moves(chess_board, player)
-
-    if not legal_moves:
-      return None  # No valid moves available, pass turn
-    best_move = None
-    best_score = -float("inf")
-    for move in legal_moves:
-      # Create a copy of the board and simulate the move
-      simulated_board = deepcopy(chess_board)
-      execute_move(simulated_board, move, player)
-
-      # Evaluate the resulting board state
-      score = self.evaluation_function(simulated_board, player, opponent)
-      if score > best_score:
-        best_score = score
-        best_move = move
-
-    # Some simple code to help you with timing. Consider checking 
-    # time_taken during your search and breaking with the best answer
-    # so far when it nears 2 seconds.
-    start_time = time.time()
-    time_taken = time.time() - start_time
-
-    #print("My AI's turn took ", time_taken, "seconds.")
-
-
-    return best_move
 

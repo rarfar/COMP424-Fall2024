@@ -1,4 +1,6 @@
 # Student agent: Add your own agent here
+import copy
+
 from agents.agent import Agent
 from store import register_agent
 import sys
@@ -7,7 +9,7 @@ from copy import deepcopy
 import time
 from helpers import random_move, count_capture, execute_move, check_endgame, get_valid_moves
 
-@register_agent("student_agent")
+@register_agent("student_agent1")
 class StudentAgent(Agent):
   """
   A class for your implementation. Feel free to use this class to
@@ -16,7 +18,7 @@ class StudentAgent(Agent):
 
   def __init__(self):
     super(StudentAgent, self).__init__()
-    self.name = "StudentAgent"
+    self.name = "StudentAgent1"
 
 #potential weights for each heuristic component
     self.weights = {"coin_parity": 1.0,
@@ -207,48 +209,55 @@ class StudentAgent(Agent):
 
 
   def step(self, chess_board, player, opponent):
-    """
-    Implement the step function of your agent here.
-    You can use the following variables to access the chess board:
-    - chess_board: a numpy array of shape (board_size, board_size)
-      where 0 represents an empty spot, 1 represents Player 1's discs (Blue),
-      and 2 represents Player 2's discs (Brown).
-    - player: 1 if this agent is playing as Player 1 (Blue), or 2 if playing as Player 2 (Brown).
-    - opponent: 1 if the opponent is Player 1 (Blue), or 2 if the opponent is Player 2 (Brown).
 
-    You should return a tuple (r,c), where (r,c) is the position where your agent
-    wants to place the next disc. Use functions in helpers to determine valid moves
-    and more helpful tools.
+    depth = 5
+    if player == 1:
+        ab_move, ab_score = self.alpha_beta(chess_board, depth, True)
+    else:
+        ab_move,ab_score = self.alpha_beta(chess_board, depth, False)
 
-    Please check the sample implementation in agents/random_agent.py or agents/human_agent.py for more details.
-    """
-
-    # Get all legal moves for the current player (our student agent)
-    legal_moves = get_valid_moves(chess_board, player)
-
-    if not legal_moves:
-      return None  # No valid moves available, pass turn
-    best_move = None
-    best_score = -float("inf")
-    for move in legal_moves:
-      # Create a copy of the board and simulate the move
-      simulated_board = deepcopy(chess_board)
-      execute_move(simulated_board, move, player)
-
-      # Evaluate the resulting board state
-      score = self.evaluation_function(simulated_board, player, opponent)
-      if score > best_score:
-        best_score = score
-        best_move = move
-
-    # Some simple code to help you with timing. Consider checking 
-    # time_taken during your search and breaking with the best answer
-    # so far when it nears 2 seconds.
-    start_time = time.time()
-    time_taken = time.time() - start_time
-
-    #print("My AI's turn took ", time_taken, "seconds.")
+    return ab_move
 
 
-    return best_move
 
+
+
+  def alpha_beta(self,chess_board,depth, is_max_player, alpha = -float('inf'), beta = float('inf')):
+    #BASECASE
+    boolean,player_score,opponent_score = check_endgame(chess_board,1,2)
+    if (depth == 0) or boolean:
+      return self.evaluation_function(chess_board,1,2)
+
+    if is_max_player:
+        value = -float('inf')
+        legal_moves = get_valid_moves(chess_board,1)
+        if not legal_moves:
+            return None  # No valid moves available, pass turn
+
+        for move in legal_moves:
+            simulated_board = copy.deepcopy(chess_board)
+            new_board = execute_move(simulated_board, move, 1)
+            tmp = self.alpha_beta(new_board, depth - 1, False, alpha, beta)
+            if tmp > value:
+                value = tmp
+                good_move = move
+
+            if value >= beta:
+                break
+            alpha = max(alpha,value)
+    else:
+        value = float('inf')
+        legal_moves = get_valid_moves(chess_board,2)
+
+        for move in legal_moves:
+            simulated_board = copy.deepcopy(chess_board)
+            new_board = execute_move(simulated_board, move, 2)
+            tmp = self.alpha_beta(new_board, depth - 1, True, alpha, beta)
+            if tmp > value:
+                value = tmp
+                good_move = move
+
+            if value <= alpha:
+                break
+            beta = min(beta,value)
+    return good_move, value
