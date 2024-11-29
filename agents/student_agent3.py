@@ -103,6 +103,8 @@ class StudentAgent(Agent):
       start_time = time.time()
 
       while True:
+          if time.time() - start_time >= max_time:
+              break
           best_move_at_depth, score = self.minmax2(chess_board,player,opponent,depth, -float('inf'), float('inf'))
           if time.time() - start_time >= max_time:
               break
@@ -276,6 +278,7 @@ class StudentAgent(Agent):
 
 
   def minmax2(self, chess_board, player, opponent, depth, alpha, beta):
+
     corners = [(0, 0), (0, chess_board.shape[1] - 1), (chess_board.shape[0] - 1, 0),
                (chess_board.shape[0] - 1, chess_board.shape[1] - 1)]
     legal_moves = get_valid_moves(chess_board, player)
