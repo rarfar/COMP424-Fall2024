@@ -1,13 +1,15 @@
 import math
+from random import random
+
 import numpy as np
 from agents.agent import Agent
-from helpers import get_valid_moves, execute_move, check_endgame, count_capture
+from helpers import get_valid_moves, execute_move, check_endgame, count_capture, random_move
 from store import register_agent
 from copy import deepcopy
 import time
 
 
-@register_agent("student_agent")
+@register_agent("student_agent2")
 class StudentAgent(Agent):
     """
     A class for your implementation. Implements Minimax with Alpha-Beta Pruning.
@@ -15,7 +17,7 @@ class StudentAgent(Agent):
 
     def __init__(self):
         super(StudentAgent, self).__init__()
-        self.name = "StudentAgent"
+        self.name = "StudentAgent2"
         self.autoplay = True
         self.weights = {"coin_parity": 25.0,
                         "mobility": 5.0,
@@ -50,7 +52,7 @@ class StudentAgent(Agent):
 
         while time.time() - start_time < time_limit:
           try:
-            move = self.best_move(chess_board, depth, player, opponent, start_time, time_limit)
+            move = self.monte_carlo_tree_search(chess_board, depth, player, opponent, start_time, time_limit)
             if move is not None:
               best_move = move
             depth += 1
@@ -70,108 +72,48 @@ class StudentAgent(Agent):
             return valid_moves[np.random.randint(len(valid_moves))]
         return None
 
-    def minimax(self, board, depth, alpha, beta, maximizing_player, player, opponent,start_time, time_limit):
+    def monte_carlo_tree_search(self, board, player, opponent, iterations,start_time, time_limit):
         """
-        Minimax algorithm with alpha-beta pruning.
+        Monte Carlo Tree Search (MCTS) algorithm using a heuristic evaluation.
 
         Parameters
         ----------
         board : numpy.ndarray
             The current state of the board.
-        depth : int
-            The depth limit for the search.
-        alpha : float
-            The alpha value for pruning.
-        beta : float
-            The beta value for pruning.
-        maximizing_player : bool
-            True if the current player is maximizing, False otherwise.
         player : int
             The current player (1 or 2).
         opponent : int
             The opponent player (1 or 2).
-
-        Returns
-        -------
-        int
-            The evaluation score for the board state.
-        """
-
-        if time.time() - start_time >= time_limit:
-          raise TimeoutError("Time limit reached")
-
-        if depth == 0 or check_endgame(board, player, opponent)[0]:
-            return self.evaluation_function(board, player, opponent)
-
-
-        if maximizing_player:
-            max_eval = -math.inf
-            for move in get_valid_moves(board, player):
-                new_board = deepcopy(board)
-                execute_move(new_board, move, player)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
-                max_eval = max(max_eval, eval)
-                alpha = max(alpha, eval)
-                if beta <= alpha:
-                    break  # Beta cut-off
-            return max_eval
-        else:
-            min_eval = math.inf
-            for move in get_valid_moves(board, opponent):
-                new_board = deepcopy(board)
-                execute_move(new_board, move, opponent)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, True, player, opponent, start_time,time_limit)
-                min_eval = min(min_eval, eval)
-                beta = min(beta, eval)
-                if beta <= alpha:
-                    break  # Alpha cut-off
-            return min_eval
-
-    def best_move(self, board, depth, player, opponent, start_time, time_limit):
-        """
-        Find the best move using Minimax with alpha-beta pruning.
-
-        Parameters
-        ----------
-        board : numpy.ndarray
-            The current state of the board.
-        depth : int
-            The depth limit for the search.
-        player : int
-            The current player (1 or 2).
-        opponent : int
-            The opponent player (1 or 2).
+        iterations : int
+            The number of iterations for the MCTS.
 
         Returns
         -------
         tuple
             The (row, col) position for the best move.
         """
-        best_val = -math.inf
-        best_move = None
-        alpha = -math.inf
-        beta = math.inf
-        corners = [(0, 0), (0, board.shape[1] - 1), (board.shape[0] - 1, 0),
-                   (board.shape[0] - 1, board.shape[1] - 1)]
+        valid_moves = get_valid_moves(board, player)
+        if not valid_moves:
+            return None
 
-        legal_moves = get_valid_moves(board, player)
+        # Track the total value and number of visits for each move
+        move_stats = {move: {'value': 0, 'visits': 0} for move in valid_moves}
 
-        for move in legal_moves:
-          if time.time() - start_time >= time_limit:
-            raise TimeoutError("Time limit reached")
-            # Prioritize taking corners
-          for corner in corners:
-              if corner in legal_moves:
-                return corner  # High-priority move
-          new_board = deepcopy(board)
-          execute_move(new_board, move, player)
-          move_val = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
-          if move_val > best_val:
-              best_val = move_val
-              best_move = move
-          alpha = max(alpha, move_val)
+        for _ in range(iterations):
+            if time.time() - start_time >= time_limit:
+                break
+            for move in valid_moves:
+                new_board = deepcopy(board)
+                execute_move(new_board, move, player)
+                eval_value = self.evaluation_function(new_board, player, opponent)
 
-        return best_move
+                # Update statistics based on the heuristic evaluation
+                move_stats[move]['visits'] += 1
+                move_stats[move]['value'] += eval_value
+
+            # Select the move with the highest average value
+            best_move = max(valid_moves, key=lambda move: move_stats[move]['value'] / move_stats[move]['visits'])
+            return best_move
 
 
     def evaluation_function(self, chess_board, player, opponent):

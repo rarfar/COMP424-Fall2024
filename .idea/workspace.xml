@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="318e9157-15ef-45a0-9d41-4f6f79df1bc7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/agents/student_agent3.py" beforeDir="false" afterPath="$PROJECT_DIR$/agents/student_agent3.py" afterDir="false" />
     </list>
+=======
+    <list default="true" id="1d27c5d5-1056-463f-bee5-0096ea08dcf0" name="Changes" comment="" />
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,6 +23,7 @@
       </list>
     </option>
   </component>
+<<<<<<< HEAD
   <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
     <envs>
       <env key="FLASK_APP" value="app" />
@@ -30,6 +35,8 @@
       </map>
     </option>
   </component>
+=======
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -39,45 +46,97 @@
     &quot;assignee&quot;: &quot;rarfar&quot;
   }
 }</component>
+<<<<<<< HEAD
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/rarfar/COMP424-Fall2024.git&quot;,
     &quot;accountId&quot;: &quot;7840ba73-e19e-4c40-baaa-1be28f812091&quot;
+=======
+  <component name="GitToolBoxStore">
+    <option name="recentBranches">
+      <RecentBranches>
+        <option name="branchesForRepo">
+          <list>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="laptop" />
+                    <option name="lastUsedInstant" value="1732802464" />
+                  </RecentBranch>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1732802463" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$" />
+            </RecentBranchesForRepo>
+          </list>
+        </option>
+      </RecentBranches>
+    </option>
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/rarfar/COMP424-Fall2024.git&quot;,
+    &quot;accountId&quot;: &quot;5df3fa04-b0f5-4807-ac6e-95d7847a490b&quot;
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
   }
 }</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
+<<<<<<< HEAD
   <component name="ProjectId" id="2oXzKRvMhFsjPmG756w5Zn0rh5f" />
+=======
+  <component name="ProjectId" id="2oWlGgplozX185LjoursuIP9Krk" />
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+<<<<<<< HEAD
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/ryry3/PycharmProjects/COMP424_AI/.venv",
+=======
+    "Python.simulator.executor": "Run",
+    "Python.student_agent.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "laptop",
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+<<<<<<< HEAD
     "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+=======
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
+<<<<<<< HEAD
         <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23726.102" />
         <option value="bundled-python-sdk-5e1850174b45-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23726.102" />
+=======
+        <option value="bundled-js-predefined-d6986cc7102b-7c0b70fcd90d-JavaScript-PY-242.21829.153" />
+        <option value="bundled-python-sdk-464836ebc622-b74155a9e76b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.21829.153" />
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+<<<<<<< HEAD
       <changelist id="318e9157-15ef-45a0-9d41-4f6f79df1bc7" name="Changes" comment="" />
       <created>1731030643798</created>
       <option name="number" value="Default" />
@@ -91,6 +150,19 @@
       <workItem from="1731087753045" duration="3314000" />
       <workItem from="1731544982652" duration="2207000" />
       <workItem from="1732755163817" duration="11224000" />
+=======
+      <changelist id="1d27c5d5-1056-463f-bee5-0096ea08dcf0" name="Changes" comment="" />
+      <created>1730993118934</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1730993118934</updated>
+      <workItem from="1730993120184" duration="884000" />
+      <workItem from="1730994204596" duration="1420000" />
+      <workItem from="1732053992819" duration="520000" />
+      <workItem from="1732054535152" duration="2415000" />
+      <workItem from="1732058549977" duration="21546000" />
+      <workItem from="1732645635884" duration="30277000" />
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
     </task>
     <servers />
   </component>
@@ -108,4 +180,11 @@
       </map>
     </option>
   </component>
+<<<<<<< HEAD
+=======
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/COMP424_Fall2024$student_agent.coverage" NAME="student_agent Coverage Results" MODIFIED="1732217098007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/agents" />
+    <SUITE FILE_PATH="coverage/COMP424_Fall2024$simulator.coverage" NAME="simulator Coverage Results" MODIFIED="1730993273337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+>>>>>>> 610505cf2ee96c8ac630f02914c284aec2c6bcc1
 </project>

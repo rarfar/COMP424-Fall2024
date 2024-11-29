@@ -7,7 +7,7 @@ from copy import deepcopy
 import time
 
 
-@register_agent("student_agent")
+@register_agent("student_agent_partner_ab")
 class StudentAgent(Agent):
     """
     A class for your implementation. Implements Minimax with Alpha-Beta Pruning.
@@ -15,12 +15,14 @@ class StudentAgent(Agent):
 
     def __init__(self):
         super(StudentAgent, self).__init__()
-        self.name = "StudentAgent"
+        self.name = "MinimaxAgent"
         self.autoplay = True
-        self.weights = {"coin_parity": 25.0,
-                        "mobility": 5.0,
-                        "corners_captured": 30.0,
-                        "stability": 25.0
+
+        # potential weights for each heuristic component
+        self.weights = {"coin_parity": 1.0,
+                        "mobility": 3.0,
+                        "corners_captured": 5.0,
+                        "stability": 4.0
                         }
 
     def step(self, chess_board, player, opponent):
@@ -41,25 +43,12 @@ class StudentAgent(Agent):
         tuple
             The (row, col) position for the next move.
         """
-        depth = 2  # Adjust this depth based on performance
+        depth = 3  # Adjust this depth based on performance
         start_time = time.time()
-        best_move = None
-        time_limit = 1.985
-        board_size = len(chess_board)
 
-
-        while time.time() - start_time < time_limit:
-          try:
-            move = self.best_move(chess_board, depth, player, opponent, start_time, time_limit)
-            if move is not None:
-              best_move = move
-            depth += 1
-          except TimeoutError:
-            break # stop searching if the time limit is exceeded
-
-
+        best_move = self.best_move(chess_board, depth, player, opponent)
         time_taken = time.time() - start_time
-        print(f"My AI's turn took {time_taken} seconds. Explored depth: {depth -1}")
+        print(f"My AI's turn took {time_taken} seconds.")
 
         if best_move is not None:
             return best_move
@@ -70,7 +59,7 @@ class StudentAgent(Agent):
             return valid_moves[np.random.randint(len(valid_moves))]
         return None
 
-    def minimax(self, board, depth, alpha, beta, maximizing_player, player, opponent,start_time, time_limit):
+    def minimax(self, board, depth, alpha, beta, maximizing_player, player, opponent):
         """
         Minimax algorithm with alpha-beta pruning.
 
@@ -96,20 +85,15 @@ class StudentAgent(Agent):
         int
             The evaluation score for the board state.
         """
-
-        if time.time() - start_time >= time_limit:
-          raise TimeoutError("Time limit reached")
-
         if depth == 0 or check_endgame(board, player, opponent)[0]:
             return self.evaluation_function(board, player, opponent)
-
 
         if maximizing_player:
             max_eval = -math.inf
             for move in get_valid_moves(board, player):
                 new_board = deepcopy(board)
                 execute_move(new_board, move, player)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
+                eval = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent)
                 max_eval = max(max_eval, eval)
                 alpha = max(alpha, eval)
                 if beta <= alpha:
@@ -120,14 +104,14 @@ class StudentAgent(Agent):
             for move in get_valid_moves(board, opponent):
                 new_board = deepcopy(board)
                 execute_move(new_board, move, opponent)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, True, player, opponent, start_time,time_limit)
+                eval = self.minimax(new_board, depth - 1, alpha, beta, True, player, opponent)
                 min_eval = min(min_eval, eval)
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break  # Alpha cut-off
             return min_eval
 
-    def best_move(self, board, depth, player, opponent, start_time, time_limit):
+    def best_move(self, board, depth, player, opponent):
         """
         Find the best move using Minimax with alpha-beta pruning.
 
@@ -156,57 +140,21 @@ class StudentAgent(Agent):
 
         legal_moves = get_valid_moves(board, player)
 
-        for move in legal_moves:
-          if time.time() - start_time >= time_limit:
-            raise TimeoutError("Time limit reached")
+        for move in get_valid_moves(board, player):
             # Prioritize taking corners
-          for corner in corners:
-              if corner in legal_moves:
-                return corner  # High-priority move
-          new_board = deepcopy(board)
-          execute_move(new_board, move, player)
-          move_val = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
-          if move_val > best_val:
-              best_val = move_val
-              best_move = move
-          alpha = max(alpha, move_val)
+            for corner in corners:
+                if corner in legal_moves:
+                    return corner  # High-priority move
+            new_board = deepcopy(board)
+            execute_move(new_board, move, player)
+            move_val = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent)
+            if move_val > best_val:
+                best_val = move_val
+                best_move = move
+
+            alpha = max(alpha, move_val)
 
         return best_move
-
-
-    def evaluation_function(self, chess_board, player, opponent):
-        """
-               A simple heuristic function to evaluate the board state.
-
-               Parameters
-               ----------
-               chess_board : numpy.ndarray
-                   The current state of the board.
-               player : int
-                   The current player (1 or 2).
-               opponent : int
-                   The opponent player (1 or 2).
-
-               Returns
-               -------
-               int
-                   The evaluation score for the board state.
-               """
-
-        coin_parity_score = self.heuristic_coin_parity(chess_board, player, opponent)
-        mobility_score = self.heuristic_mobility(chess_board, player, opponent)
-        corners_score = self.heuristic_corners_capture(chess_board, player, opponent)
-        stability_score = self.heuristic_stability(chess_board, player, opponent)
-
-        total_score = (
-                self.weights["coin_parity"] * coin_parity_score +
-                self.weights["mobility"] * mobility_score +
-                self.weights["corners_captured"] * corners_score +
-                self.weights["stability"] * stability_score
-        )
-        return total_score
-
-
 
         #### heuristic calculations
 
@@ -239,6 +187,10 @@ class StudentAgent(Agent):
             return 0
 
     def heuristic_stability(self, chess_board, player, opponent):
+
+        start_time = time.time()
+
+
         board_size = len(chess_board)
         player_stability = 0
         opponent_stability = 0
@@ -373,4 +325,3 @@ class StudentAgent(Agent):
                 return True
 
         return False
-
