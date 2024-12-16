@@ -7,6 +7,7 @@ from copy import deepcopy
 import time
 
 
+# with naive move ordering
 @register_agent("student_agent")
 class StudentAgent(Agent):
     """
@@ -17,6 +18,7 @@ class StudentAgent(Agent):
         super(StudentAgent, self).__init__()
         self.name = "StudentAgent"
         self.autoplay = True
+        # statically assigned weights
         self.weights = {"coin_parity": 25.0,
                         "mobility": 5.0,
                         "corners_captured": 30.0,
@@ -42,24 +44,23 @@ class StudentAgent(Agent):
             The (row, col) position for the next move.
         """
         depth = 2  # Adjust this depth based on performance
+        max_depth = 100
         start_time = time.time()
         best_move = None
         time_limit = 1.985
         board_size = len(chess_board)
 
-
-        while time.time() - start_time < time_limit:
-          try:
-            move = self.best_move(chess_board, depth, player, opponent, start_time, time_limit)
-            if move is not None:
-              best_move = move
-            depth += 1
-          except TimeoutError:
-            break # stop searching if the time limit is exceeded
-
+        while time.time() - start_time < time_limit and depth <= max_depth:
+            try:
+                move = self.best_move(chess_board, depth, player, opponent, start_time, time_limit)
+                if move is not None:
+                    best_move = move
+                depth += 1
+            except TimeoutError:
+                break  # stop searching if the time limit is exceeded
 
         time_taken = time.time() - start_time
-        print(f"My AI's turn took {time_taken} seconds. Explored depth: {depth -1}")
+        print(f"My AI's turn took {time_taken} seconds. Explored depth: {depth}")
 
         if best_move is not None:
             return best_move
@@ -70,7 +71,7 @@ class StudentAgent(Agent):
             return valid_moves[np.random.randint(len(valid_moves))]
         return None
 
-    def minimax(self, board, depth, alpha, beta, maximizing_player, player, opponent,start_time, time_limit):
+    def minimax(self, board, depth, alpha, beta, maximizing_player, player, opponent, start_time, time_limit, phase):
         """
         Minimax algorithm with alpha-beta pruning.
 
@@ -98,18 +99,20 @@ class StudentAgent(Agent):
         """
 
         if time.time() - start_time >= time_limit:
-          raise TimeoutError("Time limit reached")
+            raise TimeoutError("Time limit reached")
 
         if depth == 0 or check_endgame(board, player, opponent)[0]:
-            return self.evaluation_function(board, player, opponent)
+            return self.evaluation_function(board, player, opponent, phase)
 
+        phase = self.get_game_phase(board)
 
         if maximizing_player:
             max_eval = -math.inf
             for move in get_valid_moves(board, player):
                 new_board = deepcopy(board)
                 execute_move(new_board, move, player)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
+                eval = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent, start_time, time_limit,
+                                    phase)
                 max_eval = max(max_eval, eval)
                 alpha = max(alpha, eval)
                 if beta <= alpha:
@@ -120,7 +123,8 @@ class StudentAgent(Agent):
             for move in get_valid_moves(board, opponent):
                 new_board = deepcopy(board)
                 execute_move(new_board, move, opponent)
-                eval = self.minimax(new_board, depth - 1, alpha, beta, True, player, opponent, start_time,time_limit)
+                eval = self.minimax(new_board, depth - 1, alpha, beta, True, player, opponent, start_time, time_limit,
+                                    phase)
                 min_eval = min(min_eval, eval)
                 beta = min(beta, eval)
                 if beta <= alpha:
@@ -157,24 +161,25 @@ class StudentAgent(Agent):
         legal_moves = get_valid_moves(board, player)
 
         for move in legal_moves:
-          if time.time() - start_time >= time_limit:
-            raise TimeoutError("Time limit reached")
-            # Prioritize taking corners
-          for corner in corners:
-              if corner in legal_moves:
-                return corner  # High-priority move
-          new_board = deepcopy(board)
-          execute_move(new_board, move, player)
-          move_val = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent,start_time,time_limit)
-          if move_val > best_val:
-              best_val = move_val
-              best_move = move
-          alpha = max(alpha, move_val)
+            if time.time() - start_time >= time_limit:
+                raise TimeoutError("Time limit reached")
+                # Prioritize taking corners
+            for corner in corners:
+                if corner in legal_moves:
+                    return corner  # High-priority move
+            new_board = deepcopy(board)
+            execute_move(new_board, move, player)
+            phase = self.get_game_phase(new_board)
+            move_val = self.minimax(new_board, depth - 1, alpha, beta, False, player, opponent, start_time, time_limit,
+                                    phase)
+            if move_val > best_val:
+                best_val = move_val
+                best_move = move
+            alpha = max(alpha, move_val)
 
         return best_move
 
-
-    def evaluation_function(self, chess_board, player, opponent):
+    def evaluation_function(self, chess_board, player, opponent, phase):
         """
                A simple heuristic function to evaluate the board state.
 
@@ -198,6 +203,14 @@ class StudentAgent(Agent):
         corners_score = self.heuristic_corners_capture(chess_board, player, opponent)
         stability_score = self.heuristic_stability(chess_board, player, opponent)
 
+        # Assign weights based on phase
+        if phase == "early":
+            weights = {"stability": 4.0, "mobility": 4.0, "corners_captured": 1.0, "coin_parity": 1.0}
+        elif phase == "mid":
+            weights = {"stability": 3.0, "mobility": 2.0, "corners_captured": 3.0, "coin_parity": 2.0}
+        else:  # "end"
+            weights = {"stability": 2.0, "mobility": 1.0, "corners_captured": 3.0, "coin_parity": 5.0}
+
         total_score = (
                 self.weights["coin_parity"] * coin_parity_score +
                 self.weights["mobility"] * mobility_score +
@@ -206,7 +219,25 @@ class StudentAgent(Agent):
         )
         return total_score
 
+    def get_game_phase(self, board):
+        empty_squares = self.count_empty_squares(board)
+        total_squares = len(board) * len(board[0])
 
+        if empty_squares > total_squares * 0.6:
+            return "early"
+        elif empty_squares > total_squares * 0.33:
+            return "mid"
+        else:
+            return "end"
+
+    def count_empty_squares(self, board):
+        count = 0
+        board_size = len(board)
+        for r in range(board_size):
+            for c in range(board_size):
+                if board[r][c] == 0:  # board space not occupied
+                    count += 1
+        return count
 
         #### heuristic calculations
 
@@ -373,4 +404,3 @@ class StudentAgent(Agent):
                 return True
 
         return False
-
